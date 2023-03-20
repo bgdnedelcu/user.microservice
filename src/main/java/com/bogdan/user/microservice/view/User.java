@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -20,9 +22,10 @@ public class User {
     @Column(name = "id")
     private long id;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -38,5 +41,8 @@ public class User {
 
     @Column(name = "channel_name")
     private String channelName;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<PlayList> playListSet;
 
 }

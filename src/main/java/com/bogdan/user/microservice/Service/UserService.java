@@ -2,14 +2,12 @@ package com.bogdan.user.microservice.Service;
 
 import com.bogdan.user.microservice.constants.AppConstants;
 import com.bogdan.user.microservice.dao.LogsDao;
+import com.bogdan.user.microservice.dao.PlayListDao;
 import com.bogdan.user.microservice.dao.RegisterDao;
 import com.bogdan.user.microservice.dao.UserDao;
 import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.util.SendEmail;
-import com.bogdan.user.microservice.view.Logs;
-import com.bogdan.user.microservice.view.RegisterCode;
-import com.bogdan.user.microservice.view.Role;
-import com.bogdan.user.microservice.view.User;
+import com.bogdan.user.microservice.view.*;
 import com.bogdan.user.microservice.view.dto.AllUsersView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +32,24 @@ public class UserService implements UserDetailsService {
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
     private final SendEmail sendEmail;
-
     private final LogsDao logsDao;
+
+    private final PlayListDao playListDao;
 
     @Autowired
     public UserService(UserDao userDao, PasswordEncoder passwordEncoder, SendEmail sendEmail,
-                       RegisterDao registerDao, LogsDao logsDao) {
+                       RegisterDao registerDao, LogsDao logsDao, PlayListDao playListDao) {
         this.userDao = userDao;
         this.passwordEncoder = passwordEncoder;
         this.sendEmail = sendEmail;
         this.registerDao = registerDao;
         this.logsDao = logsDao;
+        this.playListDao = playListDao;
+    }
+
+    public long getIdByEmail(final String email){
+        User user = userDao.findFirstIdByEmail(email).orElseThrow(() -> new UsernameNotFoundException("kh"));
+        return user.getId();
     }
 
     @Override
@@ -148,4 +153,24 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().body("Contul a fost creat cu succes!");
     }
 
+    public ResponseEntity addPlayList(final PlayList playList, final String email) {
+        final User user = userDao.findByEmail(email);
+        playList.setUser(user);
+        playList.setTitle(playList.getTitle());
+        playListDao.save(playList);
+
+        final Logs log = new Logs();
+        log.setEmail(user.getEmail());
+        log.setActionDesc("A creat un nou playlist");
+        log.setTimeStamp(new Date());
+        logsDao.save(log);
+
+        return ResponseEntity.ok("Succes");
+    }
+    public List<PlayList> getAllPlayLists(final String email) {
+        final User user = userDao.findByEmail(email);
+        final List<PlayList> playlists = new ArrayList<>();
+        playlists.addAll(user.getPlayListSet());
+        return playlists;
+    }
 }

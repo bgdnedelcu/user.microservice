@@ -1,15 +1,17 @@
-package com.bogdan.user.microservice.view.dto;
+package com.bogdan.user.microservice.view;
 
-import com.bogdan.user.microservice.view.User;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
 @Setter
-@Slf4j
+@Getter
 @Entity
 @Table(name = "playlists")
 public class PlayList {
@@ -22,8 +24,9 @@ public class PlayList {
     @Column(name = "title")
     private String title;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
 }
