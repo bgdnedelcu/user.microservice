@@ -12,7 +12,9 @@ import com.bogdan.user.microservice.view.dto.AllUsersView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,6 +48,7 @@ public class UserService implements UserDetailsService {
         this.logsDao = logsDao;
         this.playListDao = playListDao;
     }
+
 
     public long getIdByEmail(final String email){
         User user = userDao.findFirstIdByEmail(email).orElseThrow(() -> new UsernameNotFoundException("kh"));
@@ -153,8 +156,13 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().body("Contul a fost creat cu succes!");
     }
 
+    private String getEmailFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.debug(authentication.getName());
+        return authentication.getName();
+    }
     public ResponseEntity addPlayList(final PlayList playList, final String email) {
-        final User user = userDao.findByEmail(email);
+        final User user = userDao.findByEmail(getEmailFromToken());
         playList.setUser(user);
         playList.setTitle(playList.getTitle());
         playListDao.save(playList);
@@ -173,4 +181,5 @@ public class UserService implements UserDetailsService {
         playlists.addAll(user.getPlayListSet());
         return playlists;
     }
+
 }

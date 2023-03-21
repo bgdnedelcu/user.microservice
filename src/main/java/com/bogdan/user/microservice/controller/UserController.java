@@ -39,21 +39,21 @@ public class UserController {
         return userService.getIdByEmail(user.getEmail());
     }
 
-//    @GetMapping("/getIdByEmail")
-//    public Long getIdByEmail() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String userEmail = authentication.getName();
-//        return userService.getIdByEmail(userEmail);
-//    }
+
+    private String getEmailFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.debug(authentication.getName());
+        return authentication.getName();
+    }
 
     @PostMapping("createNewPlayList")
-    public ResponseEntity addPlayList(@RequestBody final PlayList playlist, @RequestParam("email") final String email) {
-    return userService.addPlayList(playlist, email);
+    public ResponseEntity addPlayList(@RequestBody final PlayList playlist) {
+    return userService.addPlayList(playlist, getEmailFromToken());
     }
 
     @GetMapping("playlists")
-    public List<PlayList> getAllPlayLists(@RequestParam("email") final String email) {
-        return userService.getAllPlayLists(email);
+    public List<PlayList> getAllPlayLists(final String email) {
+        return userService.getAllPlayLists(getEmailFromToken());
     }
 
     @GetMapping("/allUsersInfo")
