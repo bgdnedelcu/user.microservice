@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class MyAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-        private AuthenticationManager authenticationManager;
+        private final AuthenticationManager authenticationManager;
         @Autowired
         public MyAuthenticationFilter(final AuthenticationManager authenticationManager) {
             this.authenticationManager = authenticationManager;
@@ -43,7 +43,7 @@ public class MyAuthenticationFilter extends UsernamePasswordAuthenticationFilter
             Algorithm algorithm = Algorithm.HMAC256(AppConstants.SECURITY_KEY.getBytes());
             String accessToken = JWT.create()
                     .withSubject(user.getUsername())
-                    .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 100 * 1000)) // 60 * 60 = 3600 ms = 60 sec => 1.5h
+                    .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 100 * 1000))
                     .withIssuer(request.getRequestURL().toString())
                     .withClaim("role", user.getAuthorities().stream().map(obj -> obj.getAuthority()).collect(Collectors.toList()))
                     .sign(algorithm);

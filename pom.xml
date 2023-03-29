@@ -87,6 +87,12 @@
 			<artifactId>netty-codec-http</artifactId>
 
 		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
 		<!-- Thanks for using https://jar-download.com -->
 
 	</dependencies>

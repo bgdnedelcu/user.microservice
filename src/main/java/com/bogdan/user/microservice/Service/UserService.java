@@ -107,11 +107,12 @@ public class UserService implements UserDetailsService {
 
     public ResponseEntity createAccount(User user){
         if(userDao.findByEmail(user.getEmail()) != null){
-            return ResponseEntity.badRequest().body("Exista deja un cont cu aceasta adresa de email!");
+            return ResponseEntity.badRequest().body("Account already exists!");
         }
         User newAccount = new User();
         newAccount.setEmail(user.getEmail());
         newAccount.setPassword(passwordEncoder.encode(user.getPassword()));
+        log.debug(user.getPassword());
         newAccount.setChannelName(user.getChannelName());
 
         final Role role = new Role();

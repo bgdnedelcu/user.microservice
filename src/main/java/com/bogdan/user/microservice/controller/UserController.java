@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("videoplatform/api/account")
 @Slf4j
-@CrossOrigin("*")
 public class UserController {
 
     private final UserService userService;
