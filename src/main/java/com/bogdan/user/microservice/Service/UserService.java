@@ -183,4 +183,20 @@ public class UserService implements UserDetailsService {
         return playlists;
     }
 
+    public String getChannelNameByEmail(String email) throws ResourceNotFoundException {
+        final Optional<User> user = userDao.findChannelNameByEmail(getEmailFromToken());
+        if (!user.isPresent()) {
+            throw new ResourceNotFoundException("Nu am gasit user-ul");
+        }
+        return user.get().getChannelName();
+    }
+
+    public String getChannelNameByUserId(Long id) throws ResourceNotFoundException{
+        final Optional<User> user = userDao.findById(id);
+        if(!user.isPresent()){
+            throw new ResourceNotFoundException("Nu am gasit user-ul");
+        }
+        return user.get().getChannelName();
+    }
+
 }

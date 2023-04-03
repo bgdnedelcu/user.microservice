@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers("/videoplatform/api/account/login").permitAll()
                 .requestMatchers("/videoplatform/api/account/finishregistration/**").permitAll()
                 .requestMatchers("/videoplatform/api/account/getIdByEmail").permitAll()
+                .requestMatchers("/videoplatform/api/account/channelNameById/*").permitAll()
                 .anyRequest().authenticated();
         http.addFilter(myAuthenticationFilter);
         http.addFilterBefore(new MyAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -1,6 +1,7 @@
 package com.bogdan.user.microservice.controller;
 
 import com.bogdan.user.microservice.Service.UserService;
+import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.view.PlayList;
 import com.bogdan.user.microservice.view.User;
 import com.bogdan.user.microservice.view.dto.AllUsersView;
@@ -27,11 +28,6 @@ public class UserController {
     public List<User> getAllUsers(){
         return userService.getListOfUsers();
     }
-
-//    @GetMapping(value = "/userByEmail")
-//    public User getUserByEmail(@RequestBody String email){
-//        return userService.getUserByEmail(email);
-//    }
 
     @PostMapping(value = "/getIdByEmail")
     public Long getIdByEmail(@RequestBody User user){
@@ -68,6 +64,21 @@ public class UserController {
     @GetMapping("finishregistration/{key}")
     public ResponseEntity finishRegistration(@PathVariable("key") final String key) {
         return userService.finishRegistration(key);
+    }
+
+    @GetMapping("channelName")
+    public String getChannelNameByEmail(final String email) throws ResourceNotFoundException {
+        return userService.getChannelNameByEmail(getEmailFromToken());
+    }
+
+    @GetMapping("userById/{id}")
+    public User getUserById(@PathVariable("id") final Long id) throws ResourceNotFoundException {
+        return userService.getUserById(id);
+    }
+
+    @GetMapping("channelNameById/{id}")
+    public String getChannelNameByUserId(@PathVariable("id") final Long id) throws ResourceNotFoundException{
+        return userService.getChannelNameByUserId(id);
     }
 
 }
