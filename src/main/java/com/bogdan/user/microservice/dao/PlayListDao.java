@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface PlayListDao extends JpaRepository<PlayList, Long> {
 
     Optional<PlayList> findById(Long id);
+
 }

@@ -11,11 +11,13 @@ import java.util.Optional;
 public interface UserDao extends JpaRepository<User, Long> {
 
     List<User> findByEmailAndPassword(String email, String password);
+
     User findByEmail(String email);
+
     Optional<User> findFirstIdByEmail(String email);
 
     Optional<User> findChannelNameByEmail(String email);
 
-//    Optional<User> findChannelNameByUserId(Long id);
+    Optional<User> findIdByChannelName(String channelName);
 
 }

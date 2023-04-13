@@ -1,4 +1,4 @@
-package com.bogdan.user.microservice.Service;
+package com.bogdan.user.microservice.service;
 
 import com.bogdan.user.microservice.constants.AppConstants;
 import com.bogdan.user.microservice.dao.LogsDao;
@@ -11,10 +11,9 @@ import com.bogdan.user.microservice.view.*;
 import com.bogdan.user.microservice.view.dto.AllUsersView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,27 +29,26 @@ import java.util.Optional;
 @Slf4j
 public class UserService implements UserDetailsService {
     private final RegisterDao registerDao;
-
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
     private final SendEmail sendEmail;
     private final LogsDao logsDao;
-
     private final PlayListDao playListDao;
+    private final UtilityService utilityService;
 
     @Autowired
     public UserService(UserDao userDao, PasswordEncoder passwordEncoder, SendEmail sendEmail,
-                       RegisterDao registerDao, LogsDao logsDao, PlayListDao playListDao) {
+                       RegisterDao registerDao, LogsDao logsDao, PlayListDao playListDao, UtilityService utilityService) {
         this.userDao = userDao;
         this.passwordEncoder = passwordEncoder;
         this.sendEmail = sendEmail;
         this.registerDao = registerDao;
         this.logsDao = logsDao;
         this.playListDao = playListDao;
+        this.utilityService = utilityService;
     }
 
-
-    public long getIdByEmail(final String email){
+    public long getIdByEmail(final String email) {
         User user = userDao.findFirstIdByEmail(email).orElseThrow(() -> new UsernameNotFoundException("kh"));
         return user.getId();
     }
@@ -58,7 +56,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         final User user = userDao.findByEmail(email);
-        if (user == null ) {
+        if (user == null) {
             throw new UsernameNotFoundException("Contul nu a fost gasit!");
         }
 
@@ -72,29 +70,30 @@ public class UserService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority(user.getRole().getRoleName()));
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
+
     public List<User> getListOfUsers() {
         return userDao.findAll();
     }
 
-    public User getUserByEmail(String email){
+    public User getUserByEmail(String email) {
         return userDao.findByEmail(email);
     }
 
     public User getUserById(Long id) throws ResourceNotFoundException {
         Optional<User> user = userDao.findById(id);
 
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new ResourceNotFoundException("Nu am gasit id-ul");
         }
         return user.get();
 
     }
 
-    public List<AllUsersView> getAllUsersInfo(){
+    public List<AllUsersView> getAllUsersInfo() {
         List<AllUsersView> allUsersList = new ArrayList<>();
         List<User> userList = userDao.findAll();
 
-        for(User user : userList){
+        for (User user : userList) {
             AllUsersView allUsersView = new AllUsersView();
             allUsersView.setId(user.getId());
             allUsersView.setEmail(user.getEmail());
@@ -105,8 +104,8 @@ public class UserService implements UserDetailsService {
         return allUsersList;
     }
 
-    public ResponseEntity createAccount(User user){
-        if(userDao.findByEmail(user.getEmail()) != null){
+    public ResponseEntity createAccount(User user) {
+        if (userDao.findByEmail(user.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Account already exists!");
         }
         User newAccount = new User();
@@ -145,7 +144,7 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().body("Contul a fost inregistrat cu succes");
     }
 
-    public ResponseEntity finishRegistration(final String key){
+    public ResponseEntity finishRegistration(final String key) {
         final RegisterCode registerCode = registerDao.findByRegisterKey(key);
         if (registerCode == null || registerCode.getUsed() == 1) {
             return ResponseEntity.badRequest().body("Codul nu exista sau a fost validat deja!");
@@ -157,13 +156,8 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().body("Contul a fost creat cu succes!");
     }
 
-    private String getEmailFromToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.debug(authentication.getName());
-        return authentication.getName();
-    }
     public ResponseEntity addPlayList(final PlayList playList, final String email) {
-        final User user = userDao.findByEmail(getEmailFromToken());
+        final User user = userDao.findByEmail(utilityService.getEmailFromToken());
         playList.setUser(user);
         playList.setTitle(playList.getTitle());
         playListDao.save(playList);
@@ -176,27 +170,52 @@ public class UserService implements UserDetailsService {
 
         return ResponseEntity.ok("Succes");
     }
-    public List<PlayList> getAllPlayLists(final String email) {
+
+    public List<PlayList> getAllPlayListsByEmail(final String email) {
         final User user = userDao.findByEmail(email);
-        final List<PlayList> playlists = new ArrayList<>();
-        playlists.addAll(user.getPlayListSet());
-        return playlists;
+        return new ArrayList<>(user.getPlayListSet());
+    }
+
+    public List<PlayList> getPlayListsByUserId(final Long userId) throws ResourceNotFoundException {
+        final Optional<User> user = userDao.findById(userId);
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("Nu am gasit user-ul");
+        }
+        return new ArrayList<>(user.get().getPlayListSet());
     }
 
     public String getChannelNameByEmail(String email) throws ResourceNotFoundException {
-        final Optional<User> user = userDao.findChannelNameByEmail(getEmailFromToken());
-        if (!user.isPresent()) {
+        final Optional<User> user = userDao.findChannelNameByEmail(utilityService.getEmailFromToken());
+        if (user.isEmpty()) {
             throw new ResourceNotFoundException("Nu am gasit user-ul");
         }
         return user.get().getChannelName();
     }
 
-    public String getChannelNameByUserId(Long id) throws ResourceNotFoundException{
+    public String getChannelNameByUserId(Long id) throws ResourceNotFoundException {
         final Optional<User> user = userDao.findById(id);
-        if(!user.isPresent()){
+        if (user.isEmpty()) {
             throw new ResourceNotFoundException("Nu am gasit user-ul");
         }
         return user.get().getChannelName();
+    }
+
+    public ResponseEntity deletePlaylist(Long idPlaylist) {
+        try {
+            playListDao.deleteById(idPlaylist);
+            String message = "The playlist with ID " + idPlaylist + " was deleted";
+            return ResponseEntity.ok().body(message);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    public Long getIdByChannelName(final String channelName) {
+        final Optional<User> user = userDao.findIdByChannelName(channelName);
+        if(user.isEmpty()){
+            throw new ResourceNotFoundException("Not working");
+        }
+        return user.get().getId();
     }
 
 }

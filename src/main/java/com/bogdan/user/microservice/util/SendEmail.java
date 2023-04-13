@@ -23,6 +23,7 @@ import java.util.Properties;
 @Slf4j
 @Component
 public class SendEmail {
+
     public void sendRegisterEmail(final String key, final String email) {
 
         log.debug("ENTER sendEmail with email = " + email);
@@ -51,4 +52,5 @@ public class SendEmail {
             System.out.println(e.getMessage());
         }
     }
+
 }

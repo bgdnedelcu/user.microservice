@@ -31,10 +31,12 @@ public class SecurityConfig {
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userService).passwordEncoder(bCryptPasswordEncoder);
     }
+
     @Autowired
     public void setAuthenticationManager(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         final MyAuthenticationFilter myAuthenticationFilter = new MyAuthenticationFilter(authenticationManager);
@@ -47,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers("/videoplatform/api/account/finishregistration/**").permitAll()
                 .requestMatchers("/videoplatform/api/account/getIdByEmail").permitAll()
                 .requestMatchers("/videoplatform/api/account/channelNameById/*").permitAll()
+                .requestMatchers("/videoplatform/api/account/getIdByChannelName/**").permitAll()
                 .anyRequest().authenticated();
         http.addFilter(myAuthenticationFilter);
         http.addFilterBefore(new MyAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
