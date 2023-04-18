@@ -89,4 +89,10 @@ public class UserController {
     public Long getIdByChannelName(@PathVariable("channelName") final String channelName){
         return userService.getIdByChannelName(channelName);
     }
+
+    @PutMapping("editPlaylistTitle/{id}")
+    public ResponseEntity updatePlaylistTitle(@PathVariable Long id, @RequestParam String title) {
+        return userService.updatePlaylistTitle(id, title);
+    }
+
 }

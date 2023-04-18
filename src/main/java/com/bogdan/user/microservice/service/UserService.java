@@ -218,4 +218,17 @@ public class UserService implements UserDetailsService {
         return user.get().getId();
     }
 
+
+    public ResponseEntity updatePlaylistTitle(final Long idPlaylist, final String newTitle) {
+        Optional<PlayList> optionalPlayList = playListDao.findById(idPlaylist);
+        if (optionalPlayList.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        PlayList playList = optionalPlayList.get();
+        playList.setTitle(newTitle);
+        playListDao.save(playList);
+        return ResponseEntity.ok().body("The title has been changed");
+    }
+
+
 }
