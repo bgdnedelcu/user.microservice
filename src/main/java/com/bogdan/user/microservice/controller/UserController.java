@@ -6,6 +6,7 @@ import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.view.PlayList;
 import com.bogdan.user.microservice.view.User;
 import com.bogdan.user.microservice.view.dto.AllUsersView;
+import com.bogdan.user.microservice.view.dto.EditAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -91,8 +92,13 @@ public class UserController {
     }
 
     @PutMapping("editPlaylistTitle/{id}")
-    public ResponseEntity updatePlaylistTitle(@PathVariable Long id, @RequestParam String title) {
+    public ResponseEntity updatePlaylistTitle(@PathVariable final Long id, @RequestParam final String title) {
         return userService.updatePlaylistTitle(id, title);
+    }
+
+    @PostMapping("updateAccount")
+    public ResponseEntity updateAccount(@RequestBody final EditAccount editAccount){
+        return userService.updateAccount(editAccount);
     }
 
 }

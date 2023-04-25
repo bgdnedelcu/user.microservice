@@ -26,7 +26,7 @@ public class User {
     private String email;
 
     @Column(name = "password")
-    @JsonIgnore
+//    @JsonIgnore
     private String password;
 
     @JsonIgnore

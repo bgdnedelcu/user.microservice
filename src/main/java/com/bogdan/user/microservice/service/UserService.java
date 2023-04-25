@@ -9,6 +9,7 @@ import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.util.SendEmail;
 import com.bogdan.user.microservice.view.*;
 import com.bogdan.user.microservice.view.dto.AllUsersView;
+import com.bogdan.user.microservice.view.dto.EditAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 @Slf4j
@@ -138,8 +141,11 @@ public class UserService implements UserDetailsService {
         log.setActionDesc("S-a creat un cont nou");
         log.setTimeStamp(new Date());
         logsDao.save(log);
-
-        sendEmail.sendRegisterEmail(registerCodeKey, email);
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> {
+            sendEmail.sendRegisterEmail(registerCodeKey, email);
+        });
+        executorService.shutdown();
 
         return ResponseEntity.ok().body("Contul a fost inregistrat cu succes");
     }
@@ -230,5 +236,18 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().body("The title has been changed");
     }
 
+    public ResponseEntity updateAccount (final EditAccount editAccount){
+        User user = userDao.findByEmail(utilityService.getEmailFromToken());
+        log.debug(user.getEmail());
+        log.debug(user.getPassword());
+        log.debug(editAccount.getNewPassword());
+        if(passwordEncoder.matches(editAccount.getCurrentPassword(), user.getPassword())){
+            user.setPassword(passwordEncoder.encode(editAccount.getNewPassword()));
+            user.setChannelName(editAccount.getNewChannelName());
+            userDao.save(user);
+            return ResponseEntity.ok().body("Succes");
+        }
+        return ResponseEntity.badRequest().body("Not ok");
+    }
 
 }
