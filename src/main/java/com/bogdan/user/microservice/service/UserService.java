@@ -57,7 +57,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
         final User user = userDao.findByEmail(email);
         if (user == null) {
             throw new UsernameNotFoundException("Contul nu a fost gasit!");
@@ -74,15 +74,12 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 
-    public List<User> getListOfUsers() {
-        return userDao.findAll();
-    }
 
     public User getUserByEmail(String email) {
         return userDao.findByEmail(email);
     }
 
-    public User getUserById(Long id) throws ResourceNotFoundException {
+    public User getUserById(final Long id) throws ResourceNotFoundException {
         Optional<User> user = userDao.findById(id);
 
         if (user.isEmpty()) {
@@ -92,6 +89,12 @@ public class UserService implements UserDetailsService {
 
     }
 
+    public String getPlaylistTitleByPlaylistId(final Long id){
+        Optional<PlayList> playList = playListDao.findById(id);
+        return playList.get().getTitle();
+    }
+
+    //to remove
     public List<AllUsersView> getAllUsersInfo() {
         List<AllUsersView> allUsersList = new ArrayList<>();
         List<User> userList = userDao.findAll();
@@ -218,12 +221,11 @@ public class UserService implements UserDetailsService {
 
     public Long getIdByChannelName(final String channelName) {
         final Optional<User> user = userDao.findIdByChannelName(channelName);
-        if(user.isEmpty()){
+        if (user.isEmpty()) {
             throw new ResourceNotFoundException("Not working");
         }
         return user.get().getId();
     }
-
 
     public ResponseEntity updatePlaylistTitle(final Long idPlaylist, final String newTitle) {
         Optional<PlayList> optionalPlayList = playListDao.findById(idPlaylist);
@@ -236,12 +238,12 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().body("The title has been changed");
     }
 
-    public ResponseEntity updateAccount (final EditAccount editAccount){
+    public ResponseEntity updateAccount(final EditAccount editAccount) {
         User user = userDao.findByEmail(utilityService.getEmailFromToken());
         log.debug(user.getEmail());
         log.debug(user.getPassword());
         log.debug(editAccount.getNewPassword());
-        if(passwordEncoder.matches(editAccount.getCurrentPassword(), user.getPassword())){
+        if (passwordEncoder.matches(editAccount.getCurrentPassword(), user.getPassword())) {
             user.setPassword(passwordEncoder.encode(editAccount.getNewPassword()));
             user.setChannelName(editAccount.getNewChannelName());
             userDao.save(user);

@@ -1,8 +1,8 @@
 package com.bogdan.user.microservice.controller;
 
+import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.service.UserService;
 import com.bogdan.user.microservice.service.UtilityService;
-import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.view.PlayList;
 import com.bogdan.user.microservice.view.User;
 import com.bogdan.user.microservice.view.dto.AllUsersView;
@@ -26,39 +26,10 @@ public class UserController {
         this.utilityService = utilityService;
     }
 
-    @GetMapping("/allAccounts")
-    public List<User> getAllUsers() {
-        return userService.getListOfUsers();
-    }
-
-    @PostMapping(value = "/getIdByEmail")
-    public Long getIdByEmail(@RequestBody User user) {
-        return userService.getIdByEmail(user.getEmail());
-    }
-
-    @PostMapping("createNewPlayList")
-    public ResponseEntity addPlayList(@RequestBody final PlayList playlist) {
-        return userService.addPlayList(playlist, utilityService.getEmailFromToken());
-    }
-
-    @GetMapping("playlistsByEmailFromToken")
-    public List<PlayList> getAllPlayLists(final String email) {
-        return userService.getAllPlayListsByEmail(utilityService.getEmailFromToken());
-    }
-
-    @GetMapping("playlistsByUserId/{userId}")
-    public List<PlayList> getPlayListsByUserId(@PathVariable("userId") final Long userId) throws ResourceNotFoundException {
-        return userService.getPlayListsByUserId(userId);
-    }
-
-    @GetMapping("/allUsersInfo")
+    //to remove
+    @GetMapping("allUsersInfo")
     public List<AllUsersView> allUsersViewList() {
         return userService.getAllUsersInfo();
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity createAccount(@RequestBody User user) {
-        return userService.createAccount(user);
     }
 
     @GetMapping("finishregistration/{key}")
@@ -81,14 +52,39 @@ public class UserController {
         return userService.getChannelNameByUserId(id);
     }
 
-    @DeleteMapping("deletePlaylistById/{id}")
-    public ResponseEntity deletePlayListById(@PathVariable("id") final Long id){
-        return userService.deletePlaylist(id);
+    @GetMapping("getIdByChannelName/{channelName}")
+    public Long getIdByChannelName(@PathVariable("channelName") final String channelName) {
+        return userService.getIdByChannelName(channelName);
     }
 
-    @GetMapping("getIdByChannelName/{channelName}")
-    public Long getIdByChannelName(@PathVariable("channelName") final String channelName){
-        return userService.getIdByChannelName(channelName);
+    @GetMapping("playlistsByEmailFromToken")
+    public List<PlayList> getAllPlayLists(final String email) {
+        return userService.getAllPlayListsByEmail(utilityService.getEmailFromToken());
+    }
+
+    @GetMapping("playlistsByUserId/{userId}")
+    public List<PlayList> getPlayListsByUserId(@PathVariable("userId") final Long userId) throws ResourceNotFoundException {
+        return userService.getPlayListsByUserId(userId);
+    }
+
+    @GetMapping("playlistTitleByPlaylistId/{playlistId}")
+    public String getPlaylistTitleByPlaylistId(@PathVariable("playlistId") final Long playlistId){
+        return userService.getPlaylistTitleByPlaylistId(playlistId);
+    }
+
+    @PostMapping(value = "getIdByEmail")
+    public Long getIdByEmail(@RequestBody User user) {
+        return userService.getIdByEmail(user.getEmail());
+    }
+
+    @PostMapping("createNewPlayList")
+    public ResponseEntity addPlayList(@RequestBody final PlayList playlist) {
+        return userService.addPlayList(playlist, utilityService.getEmailFromToken());
+    }
+
+    @PostMapping("register")
+    public ResponseEntity createAccount(@RequestBody User user) {
+        return userService.createAccount(user);
     }
 
     @PutMapping("editPlaylistTitle/{id}")
@@ -96,9 +92,14 @@ public class UserController {
         return userService.updatePlaylistTitle(id, title);
     }
 
-    @PostMapping("updateAccount")
-    public ResponseEntity updateAccount(@RequestBody final EditAccount editAccount){
+    @PutMapping("updateAccount")
+    public ResponseEntity updateAccount(@RequestBody final EditAccount editAccount) {
         return userService.updateAccount(editAccount);
+    }
+
+    @DeleteMapping("deletePlaylistById/{id}")
+    public ResponseEntity deletePlayListById(@PathVariable("id") final Long id) {
+        return userService.deletePlaylist(id);
     }
 
 }
