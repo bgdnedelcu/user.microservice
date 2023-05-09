@@ -36,7 +36,7 @@ public class UserController {
     public ResponseEntity finishRegistration(@PathVariable("key") final String key) {
         return userService.finishRegistration(key);
     }
-
+    //
     @GetMapping("channelName")
     public String getChannelNameByEmail(final String email) throws ResourceNotFoundException {
         return userService.getChannelNameByEmail(utilityService.getEmailFromToken());
