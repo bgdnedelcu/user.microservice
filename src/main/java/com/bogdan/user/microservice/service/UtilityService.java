@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 public class UtilityService {
     public String getEmailFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.debug(authentication.getName());
         return authentication.getName();
     }
 }

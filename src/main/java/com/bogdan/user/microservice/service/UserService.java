@@ -8,7 +8,6 @@ import com.bogdan.user.microservice.dao.UserDao;
 import com.bogdan.user.microservice.exceptions.ResourceNotFoundException;
 import com.bogdan.user.microservice.util.SendEmail;
 import com.bogdan.user.microservice.view.*;
-import com.bogdan.user.microservice.view.dto.AllUsersView;
 import com.bogdan.user.microservice.view.dto.EditAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,12 +59,12 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
         final User user = userDao.findByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("Contul nu a fost gasit!");
+            throw new UsernameNotFoundException("The account was not found");
         }
 
         final Logs log = new Logs();
         log.setEmail(email);
-        log.setActionDesc("A incercat sa se autentifice");
+        log.setActionDesc("Tried to login");
         log.setTimeStamp(new Date());
         logsDao.save(log);
 
@@ -74,8 +73,7 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 
-
-    public User getUserByEmail(String email) {
+    public User getUserByEmail(final String email) {
         return userDao.findByEmail(email);
     }
 
@@ -83,41 +81,25 @@ public class UserService implements UserDetailsService {
         Optional<User> user = userDao.findById(id);
 
         if (user.isEmpty()) {
-            throw new ResourceNotFoundException("Nu am gasit id-ul");
+            throw new ResourceNotFoundException("ID not found");
         }
         return user.get();
 
     }
 
-    public String getPlaylistTitleByPlaylistId(final Long id){
+    public String getPlaylistTitleByPlaylistId(final Long id) {
         Optional<PlayList> playList = playListDao.findById(id);
         return playList.get().getTitle();
     }
 
-    //to remove
-    public List<AllUsersView> getAllUsersInfo() {
-        List<AllUsersView> allUsersList = new ArrayList<>();
-        List<User> userList = userDao.findAll();
-
-        for (User user : userList) {
-            AllUsersView allUsersView = new AllUsersView();
-            allUsersView.setId(user.getId());
-            allUsersView.setEmail(user.getEmail());
-            allUsersView.setRole(user.getRole().getRoleName());
-            allUsersView.setChannelName(user.getChannelName());
-            allUsersList.add(allUsersView);
-        }
-        return allUsersList;
-    }
-
-    public ResponseEntity createAccount(User user) {
+    public ResponseEntity createAccount(final User user) {
         if (userDao.findByEmail(user.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Account already exists!");
         }
         User newAccount = new User();
         newAccount.setEmail(user.getEmail());
         newAccount.setPassword(passwordEncoder.encode(user.getPassword()));
-        log.debug(user.getPassword());
+
         newAccount.setChannelName(user.getChannelName());
 
         final Role role = new Role();
@@ -130,7 +112,6 @@ public class UserService implements UserDetailsService {
         newAccount.setRegisterCode(registerCode);
         newAccount.setRole(role);
 
-        log.debug("asdf: {}", AppConstants.REGISTER_CODE_BASE.concat(String.valueOf(newAccount.getRegisterCode().getId())));
         newAccount = userDao.save(newAccount);
 
         newAccount.getRegisterCode().setRegisterKey(AppConstants.REGISTER_CODE_BASE.concat(String.valueOf(newAccount.getRegisterCode().getId())));
@@ -141,7 +122,7 @@ public class UserService implements UserDetailsService {
 
         final Logs log = new Logs();
         log.setEmail(email);
-        log.setActionDesc("S-a creat un cont nou");
+        log.setActionDesc("New account has been created");
         log.setTimeStamp(new Date());
         logsDao.save(log);
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -150,19 +131,19 @@ public class UserService implements UserDetailsService {
         });
         executorService.shutdown();
 
-        return ResponseEntity.ok().body("Contul a fost inregistrat cu succes");
+        return ResponseEntity.ok().body("The account has been successfully registered");
     }
 
     public ResponseEntity finishRegistration(final String key) {
         final RegisterCode registerCode = registerDao.findByRegisterKey(key);
         if (registerCode == null || registerCode.getUsed() == 1) {
-            return ResponseEntity.badRequest().body("Codul nu exista sau a fost validat deja!");
+            return ResponseEntity.badRequest().body("The code does not exist or has already been validated!");
         }
 
         registerCode.setUsed(1);
 
         registerDao.save(registerCode);
-        return ResponseEntity.ok().body("Contul a fost creat cu succes!");
+        return ResponseEntity.ok().body("Account created successfully!");
     }
 
     public ResponseEntity addPlayList(final PlayList playList, final String email) {
@@ -173,11 +154,11 @@ public class UserService implements UserDetailsService {
 
         final Logs log = new Logs();
         log.setEmail(user.getEmail());
-        log.setActionDesc("A creat un nou playlist");
+        log.setActionDesc("Created a new playlist");
         log.setTimeStamp(new Date());
         logsDao.save(log);
 
-        return ResponseEntity.ok("Succes");
+        return ResponseEntity.ok("Success");
     }
 
     public List<PlayList> getAllPlayListsByEmail(final String email) {
@@ -188,23 +169,23 @@ public class UserService implements UserDetailsService {
     public List<PlayList> getPlayListsByUserId(final Long userId) throws ResourceNotFoundException {
         final Optional<User> user = userDao.findById(userId);
         if (user.isEmpty()) {
-            throw new ResourceNotFoundException("Nu am gasit user-ul");
+            throw new ResourceNotFoundException("User not found");
         }
         return new ArrayList<>(user.get().getPlayListSet());
     }
 
-    public String getChannelNameByEmail(String email) throws ResourceNotFoundException {
+    public String getChannelNameByEmail(final String email) throws ResourceNotFoundException {
         final Optional<User> user = userDao.findChannelNameByEmail(utilityService.getEmailFromToken());
         if (user.isEmpty()) {
-            throw new ResourceNotFoundException("Nu am gasit user-ul");
+            throw new ResourceNotFoundException("User not found");
         }
         return user.get().getChannelName();
     }
 
-    public String getChannelNameByUserId(Long id) throws ResourceNotFoundException {
+    public String getChannelNameByUserId(final Long id) throws ResourceNotFoundException {
         final Optional<User> user = userDao.findById(id);
         if (user.isEmpty()) {
-            throw new ResourceNotFoundException("Nu am gasit user-ul");
+            throw new ResourceNotFoundException("User not found");
         }
         return user.get().getChannelName();
     }
@@ -240,14 +221,11 @@ public class UserService implements UserDetailsService {
 
     public ResponseEntity updateAccount(final EditAccount editAccount) {
         User user = userDao.findByEmail(utilityService.getEmailFromToken());
-        log.debug(user.getEmail());
-        log.debug(user.getPassword());
-        log.debug(editAccount.getNewPassword());
         if (passwordEncoder.matches(editAccount.getCurrentPassword(), user.getPassword())) {
             user.setPassword(passwordEncoder.encode(editAccount.getNewPassword()));
             user.setChannelName(editAccount.getNewChannelName());
             userDao.save(user);
-            return ResponseEntity.ok().body("Succes");
+            return ResponseEntity.ok().body("Success");
         }
         return ResponseEntity.badRequest().body("Not ok");
     }

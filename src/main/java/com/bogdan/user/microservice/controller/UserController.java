@@ -5,7 +5,6 @@ import com.bogdan.user.microservice.service.UserService;
 import com.bogdan.user.microservice.service.UtilityService;
 import com.bogdan.user.microservice.view.PlayList;
 import com.bogdan.user.microservice.view.User;
-import com.bogdan.user.microservice.view.dto.AllUsersView;
 import com.bogdan.user.microservice.view.dto.EditAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +25,11 @@ public class UserController {
         this.utilityService = utilityService;
     }
 
-    //to remove
-    @GetMapping("allUsersInfo")
-    public List<AllUsersView> allUsersViewList() {
-        return userService.getAllUsersInfo();
-    }
-
     @GetMapping("finishregistration/{key}")
     public ResponseEntity finishRegistration(@PathVariable("key") final String key) {
         return userService.finishRegistration(key);
     }
-    //
+
     @GetMapping("channelName")
     public String getChannelNameByEmail(final String email) throws ResourceNotFoundException {
         return userService.getChannelNameByEmail(utilityService.getEmailFromToken());
@@ -68,7 +61,7 @@ public class UserController {
     }
 
     @GetMapping("playlistTitleByPlaylistId/{playlistId}")
-    public String getPlaylistTitleByPlaylistId(@PathVariable("playlistId") final Long playlistId){
+    public String getPlaylistTitleByPlaylistId(@PathVariable("playlistId") final Long playlistId) {
         return userService.getPlaylistTitleByPlaylistId(playlistId);
     }
 

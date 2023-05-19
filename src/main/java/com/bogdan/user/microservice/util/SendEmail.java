@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.mail.Message;
@@ -24,9 +25,11 @@ import java.util.Properties;
 @Component
 public class SendEmail {
 
+    @Value("${constants.domain}")
+    public String domain;
+
     public void sendRegisterEmail(final String key, final String email) {
 
-        log.debug("ENTER sendEmail with email = " + email);
         try {
             Properties props = new Properties();
             props.put("mail.smtp.auth", "true");
@@ -42,8 +45,9 @@ public class SendEmail {
             Message msg = new MimeMessage(session);
             msg.setFrom(new InternetAddress(EmailConstants.SENDER_EMAIL_ADDRESS, false));
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-            msg.setSubject(EmailConstants.MAIL_BODY);
-            msg.setContent(EmailConstants.BODY_MAIL + "http://" + AppConstants.DOMAIN + ":" + AppConstants.PORT
+            final String MAIL_BODY = String.format("Cod de inregistrare %s", domain);
+            msg.setSubject(MAIL_BODY);
+            msg.setContent(EmailConstants.BODY_MAIL + "http://" + domain + ":" + AppConstants.PORT
                     + "/videoplatform/api/account/finishregistration/" + key, "text/html");
             msg.setSentDate(new Date());
             Transport.send(msg);
