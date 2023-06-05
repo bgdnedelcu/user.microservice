@@ -58,7 +58,8 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
         final User user = userDao.findByEmail(email);
-        if (user == null) {
+        final Optional<RegisterCode> registerCode = registerDao.findById(user.getRegisterCode().getId());
+        if (user == null || registerCode.get().getUsed() != 1) {
             throw new UsernameNotFoundException("The account was not found");
         }
 
@@ -72,6 +73,8 @@ public class UserService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority(user.getRole().getRoleName()));
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
+
+
 
     public User getUserByEmail(final String email) {
         return userDao.findByEmail(email);
@@ -95,6 +98,9 @@ public class UserService implements UserDetailsService {
     public ResponseEntity createAccount(final User user) {
         if (userDao.findByEmail(user.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Account already exists!");
+        }
+        if (userDao.findByChannelName(user.getChannelName()) != null) {
+            return ResponseEntity.badRequest().body("Channel name already exists");
         }
         User newAccount = new User();
         newAccount.setEmail(user.getEmail());
@@ -203,7 +209,7 @@ public class UserService implements UserDetailsService {
     public Long getIdByChannelName(final String channelName) {
         final Optional<User> user = userDao.findIdByChannelName(channelName);
         if (user.isEmpty()) {
-            throw new ResourceNotFoundException("Not working");
+            throw new ResourceNotFoundException("404");
         }
         return user.get().getId();
     }

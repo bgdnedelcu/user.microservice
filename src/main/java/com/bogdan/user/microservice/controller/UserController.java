@@ -46,8 +46,8 @@ public class UserController {
     }
 
     @GetMapping("getIdByChannelName/{channelName}")
-    public Long getIdByChannelName(@PathVariable("channelName") final String channelName) {
-        return userService.getIdByChannelName(channelName);
+    public ResponseEntity<Long> getIdByChannelName(@PathVariable("channelName") final String channelName) {
+        return ResponseEntity.ok(userService.getIdByChannelName(channelName));
     }
 
     @GetMapping("playlistsByEmailFromToken")

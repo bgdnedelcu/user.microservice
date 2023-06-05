@@ -26,7 +26,6 @@ public class User {
     private String email;
 
     @Column(name = "password")
-//    @JsonIgnore
     private String password;
 
     @JsonIgnore
@@ -34,7 +33,7 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @JsonIgnore
+//    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
     @JoinColumn(name = "rc_id")
     private RegisterCode registerCode;

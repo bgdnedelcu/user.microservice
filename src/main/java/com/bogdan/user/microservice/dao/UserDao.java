@@ -20,4 +20,6 @@ public interface UserDao extends JpaRepository<User, Long> {
 
     Optional<User> findIdByChannelName(String channelName);
 
+    User findByChannelName(String channelName);
+
 }
