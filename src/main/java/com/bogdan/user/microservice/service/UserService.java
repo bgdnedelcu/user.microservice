@@ -59,7 +59,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
         final User user = userDao.findByEmail(email);
         final Optional<RegisterCode> registerCode = registerDao.findById(user.getRegisterCode().getId());
-        if (user == null || registerCode.get().getUsed() != 1) {
+        if (registerCode.isEmpty() || user == null || registerCode.get().getUsed() == 0) {
             throw new UsernameNotFoundException("The account was not found");
         }
 
@@ -73,8 +73,6 @@ public class UserService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority(user.getRole().getRoleName()));
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
-
-
 
     public User getUserByEmail(final String email) {
         return userDao.findByEmail(email);
@@ -109,8 +107,7 @@ public class UserService implements UserDetailsService {
         newAccount.setChannelName(user.getChannelName());
 
         final Role role = new Role();
-        role.setId(1);
-        role.setRoleName("user");
+        role.setId(2);
 
         final RegisterCode registerCode = new RegisterCode();
         registerCode.setUsed(0);
